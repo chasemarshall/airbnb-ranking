@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryan Trahan's 50 States Airbnb Ranking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            padding: 0;
+            line-height: 1.5;
+            height: 100vh;
+            overflow: hidden;
+            color: #e4e4e7;
+        }
+
+        .container {
+            height: 100vh;
+            max-width: 430px;
+            margin: 0 auto;
+            background: #111111;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border-left: 1px solid #2a2a2a;
+            border-right: 1px solid #2a2a2a;
+        }
+
+        .section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 24px 20px 16px;
+            background: #111111;
+            border-bottom: 1px solid #2a2a2a;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: #a1a1aa;
+            font-weight: 400;
+        }
+
+        .items-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 16px 20px;
+        }
+
+        .items-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .items-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .items-container::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 3px;
+        }
+
+        .ranked-section {
+            background: #111111;
+        }
+
+        .to-rank-section {
+            background: #0a0a0a;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .airbnb-tile {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            margin: 6px 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            cursor: grab;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .airbnb-tile:hover:not(.dragging) {
+            background: #222222;
+            border-color: #3a3a3a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .airbnb-tile:active {
+            cursor: grabbing;
+        }
+
+        .airbnb-tile.dragging {
+            opacity: 0.9;
+            transform: rotate(1deg) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 1000;
+            border-color: #4a4a4a;
+            background: #252525;
+        }
+
+        .airbnb-tile.drag-over {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .property-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 1px solid #3a3a3a;
+            position: relative;
+        }
+
+        .property-initials {
+            font-size: 14px;
+            font-weight: 600;
+            color: #a1a1aa;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .state-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 2px;
+            letter-spacing: -0.01em;
+        }
+
+        .property-name {
+            font-size: 13px;
+            color: #a1a1aa;
+            margin-bottom: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .property-type {
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .rank-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: #a1a1aa;
+            min-width: 24px;
+            text-align: right;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .rank-number.first {
+            color: #f59e0b;
+        }
+
+        .rank-number.second {
+            color: #94a3b8;
+        }
+
+        .rank-number.third {
+            color: #fb7185;
+        }
+
+        .heart-icon {
+            color: #ef4444;
+            font-size: 16px;
+            margin-left: 8px;
+            flex-shrink: 0;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .airbnb-tile.ranked .heart-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .airbnb-tile.ranked.first .heart-icon {
+            animation: heartbeat 2s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #71717a;
+            font-size: 14px;
+            font-weight: 400;
+            border: 2px dashed #2a2a2a;
+            border-radius: 12px;
+            margin: 16px 0;
+            background: rgba(42, 42, 42, 0.1);
+        }
+
+        .drag-instructions {
+            text-align: center;
+            padding: 12px 16px;
+            color: #71717a;
+            font-size: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            margin: 12px 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .drop-zone {
+            min-height: 4px;
+            border-radius: 2px;
+            margin: 2px 16px;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+
+        .drop-zone.active {
+            background: #3b82f6;
+            min-height: 3px;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+        }
+
+        /* Better mobile touch */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+                border-left: none;
+                border-right: none;
+            }
+        }
+
+        /* Smooth entrance animations */
+        .airbnb-tile {
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Ranked Section -->
+        <div class="section ranked-section">
+            <div class="section-header">
+                <div class="section-title">Ranked</div>
+                <div class="section-subtitle">Drag to reorder • Best at top</div>
+            </div>
+            <div class="items-container" id="rankedContainer">
+                <div class="empty-state" id="emptyState">
+                    Start ranking by dragging properties up from below ✨
+                </div>
+            </div>
+        </div>
+
+        <!-- To Be Ranked Section -->
+        <div class="section to-rank-section">
+            <div class="section-header">
+                <div class="section-title">Properties</div>
+                <div class="section-subtitle" id="remainingCount">50 remaining</div>
+            </div>
+            <div class="items-container" id="toRankContainer">
+                <!-- Items will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <div class="drag-instructions">
+        💡 Drag properties up to rank them • Reorder within ranked section
+    </div>
+
+    <script>
+        const airbnbData = [
+            { state: "Hawaii", property: "Ocean Front Home", type: "Villa" },
+            { state: "Arizona", property: "Norman Lykes House", type: "House" },
+            { state: "Oklahoma", property: "Treetopia Treehouse", type: "Treehouse" },
+            { state: "New Jersey", property: "Private Island", type: "House" },
+            { state: "South Carolina", property: "Charleston Waterfront", type: "House" },
+            { state: "Louisiana", property: "Ponchatoula Estate", type: "Mansion" },
+            { state: "Colorado", property: "Container Ranch", type: "Container" },
+            { state: "Rhode Island", property: "The Fairy House", type: "House" },
+            { state: "California", property: "The Castle Ivar", type: "Castle" },
+            { state: "West Virginia", property: "Bearwood", type: "House" },
+            { state: "Illinois", property: "Factory Home", type: "Factory" },
+            { state: "Massachusetts", property: "Wing Neck Lighthouse", type: "Lighthouse" },
+            { state: "Minnesota", property: "The Pump House", type: "Pump House" },
+            { state: "Montana", property: "Yellowstone", type: "Cabin" },
+            { state: "Iowa", property: "Pyramid House", type: "Pyramid" },
+            { state: "Tennessee", property: "Belltop", type: "House" },
+            { state: "Alaska", property: "Aurora House", type: "Cabin" },
+            { state: "North Carolina", property: "Luxury Yacht", type: "Boat" },
+            { state: "Oregon", property: "Rummer House", type: "House" },
+            { state: "Ohio", property: "The Roca Box Hop", type: "Cabin" },
+            { state: "Florida", property: "Prince Road Container House", type: "Container" },
+            { state: "Maine", property: "Copper Fox Treehouse", type: "Treehouse" },
+            { state: "Maryland", property: "Waterfront Barn", type: "Farm/Barn" },
+            { state: "Virginia", property: "Ava A-Frame", type: "House" },
+            { state: "Missouri", property: "Earthhouse Retreat", type: "Earthhouse" },
+            { state: "Vermont", property: "Glass Tiny House", type: "Tinyhouse" },
+            { state: "New York", property: "Willow Treehouse", type: "Treehouse" },
+            { state: "Wisconsin", property: "WW2 Airplane", type: "Plane" },
+            { state: "Georgia", property: "Lookout Tower", type: "Tower" },
+            { state: "Nevada", property: "Presidential Suite", type: "Apartment" },
+            { state: "New Mexico", property: "The Missile Silo", type: "Missile Silo" },
+            { state: "North Dakota", property: "Bison Ranch Lodge", type: "Ranch" },
+            { state: "Mississippi", property: "The Pool House", type: "House" },
+            { state: "Texas", property: "The Nut House", type: "House" },
+            { state: "Michigan", property: "Frank Lloyd House", type: "House" },
+            { state: "Connecticut", property: "River Loft", type: "Cottage" },
+            { state: "Arkansas", property: "Nuclear Missile Complex", type: "Missile Silo" },
+            { state: "Wyoming", property: "Snowflake Cabin", type: "Cabin" },
+            { state: "Alabama", property: "Storybook Castle", type: "Castle" },
+            { state: "Pennsylvania", property: "Round House", type: "Dome" },
+            { state: "Idaho", property: "Potato", type: "Farm/Barn" },
+            { state: "Kentucky", property: "Stable Suite", type: "Farm/Barn" },
+            { state: "New Hampshire", property: "Lil Red Caboose", type: "Train" },
+            { state: "Indiana", property: "Cabin off 39", type: "Cabin" },
+            { state: "Washington", property: "Space Destination", type: "UFO" },
+            { state: "Utah", property: "Star Wars Hut", type: "House" },
+            { state: "Kansas", property: "Zome on the Range", type: "Dome" },
+            { state: "Nebraska", property: "The Corny Cabin", type: "Cabin" },
+            { state: "Delaware", property: "Tiny House at Good Earth", type: "Tinyhouse" },
+            { state: "South Dakota", property: "Hillview Lodge", type: "Cabin" }
+        ];
+
+        let rankedItems = [];
+        let draggedElement = null;
+        let dragStartIndex = -1;
+        let touchStartY = 0;
+        let touchStartX = 0;
+        let isDragging = false;
+
+        function createTileElement(item, isRanked = false, rank = null) {
+            const div = document.createElement('div');
+            div.className = `airbnb-tile ${isRanked ? 'ranked' : ''}`;
+            if (rank === 1) div.classList.add('first');
+            if (rank === 2) div.classList.add('second');
+            if (rank === 3) div.classList.add('third');
+            
+            div.draggable = true;
+            div.dataset.state = item.state;
+            div.dataset.rank = rank || '';
+            
+            // Get initials from state name
+            const initials = item.state.split(' ').map(word => word[0]).join('').substring(0, 2);
+            
+            div.innerHTML = `
+                <div class="property-icon">
+                    <span class="property-initials">${initials}</span>
+                </div>
+                <div class="content">
+                    <div class="state-name">${item.state}</div>
+                    <div class="property-name">${item.property}</div>
+                    <div class="property-type">${item.type}</div>
+                </div>
+                ${isRanked ? `<div class="rank-number ${rank === 1 ? 'first' : rank === 2 ? 'second' : rank === 3 ? 'third' : ''}">${rank}</div>` : ''}
+                ${rank === 1 ? '<div class="heart-icon">❤️</div>' : ''}
+            `;
+
+            // Add drag event listeners
+            div.addEventListener('dragstart', handleDragStart);
+            div.addEventListener('dragend', handleDragEnd);
+            div.addEventListener('dragover', handleDragOver);
+            div.addEventListener('drop', handleDrop);
+            
+            // Touch events for mobile
+            div.addEventListener('touchstart', handleTouchStart, { passive: false });
+            div.addEventListener('touchmove', handleTouchMove, { passive: false });
+            div.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+            return div;
+        }
+
+        function handleDragStart(e) {
+            draggedElement = e.target.closest('.airbnb-tile');
+            draggedElement.classList.add('dragging');
+            dragStartIndex = Array.from(draggedElement.parentNode.children).indexOf(draggedElement);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                document.querySelectorAll('.airbnb-tile').forEach(el => el.classList.remove('drag-over'));
+                draggedElement = null;
+                dragStartIndex = -1;
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            const tile = e.target.closest('.airbnb-tile');
+            if (tile && tile !== draggedElement) {
+                document.querySelectorAll('.airbnb-tile').forEach(el => el.classList.remove('drag-over'));
+                tile.classList.add('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const dropTarget = e.target.closest('.airbnb-tile');
+            
+            if (dropTarget && draggedElement && dropTarget !== draggedElement) {
+                const rankedContainer = document.getElementById('rankedContainer');
+                const isDropInRanked = rankedContainer.contains(dropTarget);
+                const isDraggedFromRanked = rankedContainer.contains(draggedElement);
+                
+                if (isDropInRanked && isDraggedFromRanked) {
+                    // Reorder within ranked section
+                    reorderRankedItems(draggedElement, dropTarget);
+                } else if (isDropInRanked && !isDraggedFromRanked) {
+                    // Move from unranked to ranked at specific position
+                    moveToRankedAtPosition(draggedElement, dropTarget);
+                }
+            }
+            
+            document.querySelectorAll('.airbnb-tile').forEach(el => el.classList.remove('drag-over'));
+        }
+
+        function handleTouchStart(e) {
+            const touch = e.touches[0];
+            touchStartY = touch.clientY;
+            touchStartX = touch.clientX;
+            draggedElement = e.target.closest('.airbnb-tile');
+            isDragging = false;
+        }
+
+        function handleTouchMove(e) {
+            if (!draggedElement) return;
+            
+            const touch = e.touches[0];
+            const deltaY = Math.abs(touch.clientY - touchStartY);
+            const deltaX = Math.abs(touch.clientX - touchStartX);
+            
+            if (deltaY > 10 || deltaX > 10) {
+                if (!isDragging) {
+                    isDragging = true;
+                    draggedElement.classList.add('dragging');
+                    e.preventDefault();
+                }
+                
+                if (isDragging) {
+                    e.preventDefault();
+                    draggedElement.style.position = 'fixed';
+                    draggedElement.style.left = touch.clientX - 50 + 'px';
+                    draggedElement.style.top = touch.clientY - 30 + 'px';
+                    draggedElement.style.zIndex = '1000';
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (isDragging && draggedElement) {
+                const touch = e.changedTouches[0];
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                // Reset styles
+                draggedElement.style.position = '';
+                draggedElement.style.left = '';
+                draggedElement.style.top = '';
+                draggedElement.style.zIndex = '';
+                draggedElement.classList.remove('dragging');
+                
+                // Check if dropped in ranked section
+                const rankedContainer = document.getElementById('rankedContainer');
+                if (rankedContainer.contains(elementBelow) || elementBelow === rankedContainer) {
+                    moveToRanked(draggedElement);
+                }
+                
+                isDragging = false;
+                draggedElement = null;
+            }
+        }
+
+        function reorderRankedItems(draggedEl, dropTarget) {
+            const draggedState = draggedEl.dataset.state;
+            const dropState = dropTarget.dataset.state;
+            
+            const draggedIndex = rankedItems.findIndex(item => item.state === draggedState);
+            const dropIndex = rankedItems.findIndex(item => item.state === dropState);
+            
+            if (draggedIndex !== -1 && dropIndex !== -1) {
+                // Remove dragged item and insert at new position
+                const [draggedItem] = rankedItems.splice(draggedIndex, 1);
+                rankedItems.splice(dropIndex, 0, draggedItem);
+                renderRanked();
+            }
+        }
+
+        function moveToRankedAtPosition(draggedEl, dropTarget) {
+            const draggedState = draggedEl.dataset.state;
+            const dropState = dropTarget.dataset.state;
+            
+            const item = airbnbData.find(item => item.state === draggedState);
+            const dropIndex = rankedItems.findIndex(item => item.state === dropState);
+            
+            if (item && !rankedItems.find(ranked => ranked.state === draggedState)) {
+                rankedItems.splice(dropIndex, 0, item);
+                draggedEl.remove();
+                renderRanked();
+                updateCounts();
+            }
+        }
+
+        function moveToRanked(element) {
+            const state = element.dataset.state;
+            const item = airbnbData.find(item => item.state === state);
+            
+            if (!item || rankedItems.find(ranked => ranked.state === state)) {
+                return;
+            }
+            
+            rankedItems.push(item);
+            element.remove();
+            renderRanked();
+            updateCounts();
+        }
+
+        function renderToRank() {
+            const container = document.getElementById('toRankContainer');
+            const unrankedItems = airbnbData.filter(item => 
+                !rankedItems.find(ranked => ranked.state === item.state)
+            );
+            
+            container.innerHTML = '';
+            unrankedItems.forEach((item, index) => {
+                setTimeout(() => {
+                    container.appendChild(createTileElement(item));
+                }, index * 20); // Staggered animation
+            });
+        }
+
+        function renderRanked() {
+            const container = document.getElementById('rankedContainer');
+            
+            if (rankedItems.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Start ranking by dragging properties up from below ✨
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+                rankedItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        container.appendChild(createTileElement(item, true, index + 1));
+                    }, index * 30);
+                });
+            }
+        }
+
+        function updateCounts() {
+            const remainingCount = document.getElementById('remainingCount');
+            const remaining = 50 - rankedItems.length;
+            remainingCount.textContent = `${remaining} remaining`;
+        }
+
+        // Setup drop zones for ranked container
+        function setupDropZones() {
+            const rankedContainer = document.getElementById('rankedContainer');
+            
+            rankedContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+            
+            rankedContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedElement && !rankedContainer.contains(draggedElement)) {
+                    moveToRanked(draggedElement);
+                }
+            });
+        }
+
+        // Initialize with smooth loading
+        function init() {
+            document.body.classList.add('loading');
+            
+            setTimeout(() => {
+                renderToRank();
+                renderRanked();
+                updateCounts();
+                setupDropZones();
+                
+                setTimeout(() => {
+                    document.body.classList.remove('loading');
+                }, 500);
+            }, 100);
+        }
+
+        init();
+    </script>
+</body>
+</html>
