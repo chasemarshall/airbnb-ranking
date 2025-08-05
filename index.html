@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ryan Trahan's 50 States Airbnb Ranking</title>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,54 +13,57 @@
         }
 
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #000000;
-            padding: 0;
-            line-height: 1.47;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: #e4e4e7;
+            -webkit-font-smoothing: antialiased;
             height: 100vh;
             overflow: hidden;
-            color: #ffffff;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
-            height: 100vh;
-            max-width: 430px;
-            margin: 0 auto;
-            background: #000000;
             display: flex;
-            flex-direction: column;
-            position: relative;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(40, 40, 40, 0.8);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.3);
         }
 
-        .section {
+        .column {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        .section-header {
-            padding: 20px 24px 12px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 10;
+        .left-column {
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 30, 30, 0.6);
         }
 
-        .section-title {
-            font-size: 28px;
-            font-weight: 700;
+        .right-column {
+            background: rgba(40, 40, 40, 0.6);
+        }
+
+        .column-header {
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(40, 40, 40, 0.8);
+            backdrop-filter: blur(30px);
+        }
+
+        .column-title {
+            font-size: 24px;
+            font-weight: 600;
             color: #ffffff;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
             letter-spacing: -0.02em;
         }
 
-        .section-subtitle {
-            font-size: 15px;
+        .column-subtitle {
+            font-size: 14px;
             color: rgba(255, 255, 255, 0.6);
             font-weight: 400;
         }
@@ -68,63 +71,119 @@
         .items-container {
             flex: 1;
             overflow-y: auto;
-            padding: 12px 24px 24px;
+            padding: 16px 28px 28px;
         }
 
         .items-container::-webkit-scrollbar {
-            display: none;
+            width: 6px;
         }
 
-        .ranked-section {
-            background: #000000;
+        .items-container::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .to-rank-section {
-            background: rgba(0, 0, 0, 0.95);
-            border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+        .items-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
         }
 
-        .property-card {
+        .items-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .property-item {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 16px 20px;
             margin: 0 0 8px;
-            background: rgba(28, 28, 30, 0.8);
-            border: 0.5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+            background: rgba(60, 60, 60, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             cursor: grab;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             user-select: none;
             position: relative;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(10px);
         }
 
-        .property-card:hover:not(.dragging) {
-            background: rgba(44, 44, 46, 0.8);
+        .property-item:hover:not(.dragging) {
+            background: rgba(80, 80, 80, 0.5);
             border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .property-card:active {
+        .property-item:active {
             cursor: grabbing;
         }
 
-        .property-card.dragging {
-            opacity: 0.8;
-            transform: scale(1.05);
+        .property-item.dragging {
+            opacity: 0.9;
+            transform: scale(1.05) rotate(2deg);
             z-index: 1000;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(80, 80, 80, 0.8);
+        }
+
+        .ranked-item {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .ranked-item:hover:not(.dragging) {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .property-content {
+            flex: 1;
+        }
+
+        .state-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 2px;
+            letter-spacing: -0.01em;
+        }
+
+        .property-name {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.3;
+            font-weight: 400;
+        }
+
+        .rank-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(59, 130, 246, 1);
+            min-width: 28px;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 6px 8px;
+            margin-left: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .rank-number.top {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
         }
 
         .drop-indicator {
             height: 2px;
-            background: #007AFF;
-            border-radius: 1px;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(6, 182, 212, 0.8));
+            border-radius: 2px;
             margin: 4px 0;
             opacity: 0;
             transform: scaleX(0);
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
         }
 
         .drop-indicator.active {
@@ -132,241 +191,246 @@
             transform: scaleX(1);
         }
 
-        .property-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 16px;
-            flex-shrink: 0;
-            background: rgba(72, 72, 74, 0.6);
-            border: 0.5px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .property-initials {
-            font-size: 16px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .state-name {
-            font-size: 17px;
-            font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 1px;
-            letter-spacing: -0.02em;
-        }
-
-        .property-name {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .property-type {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
-            font-weight: 400;
-        }
-
-        .rank-number {
-            font-size: 17px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.6);
-            min-width: 32px;
-            text-align: right;
-            margin-left: 16px;
-            flex-shrink: 0;
-        }
-
-        .rank-number.top3 {
-            color: #007AFF;
-        }
-
         .empty-state {
             text-align: center;
             padding: 60px 32px;
             color: rgba(255, 255, 255, 0.5);
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .empty-emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+            opacity: 0.7;
         }
 
         .instructions {
-            text-align: center;
-            padding: 16px 24px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 15px;
-            background: rgba(0, 122, 255, 0.1);
-            border: 0.5px solid rgba(0, 122, 255, 0.2);
-            border-radius: 12px;
-            margin: 16px 24px;
-            backdrop-filter: blur(20px);
-        }
-
-        /* Drag and drop visual feedback */
-        .drag-preview {
             position: fixed;
-            pointer-events: none;
-            z-index: 2000;
-            opacity: 0.9;
-            transform: rotate(5deg);
-        }
-
-        /* Better mobile touch */
-        @media (max-width: 480px) {
-            .container {
-                max-width: 100%;
-            }
-            
-            .section-header {
-                padding: 16px 20px 8px;
-            }
-            
-            .items-container {
-                padding: 8px 20px 20px;
-            }
-        }
-
-        /* Smooth entrance animations */
-        .property-card {
-            animation: fadeInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 400;
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
         }
 
         /* Save indicator */
         .save-indicator {
             position: fixed;
-            top: 50px;
+            top: 24px;
             right: 24px;
-            background: rgba(52, 199, 89, 0.9);
+            background: rgba(16, 185, 129, 0.9);
             color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 12px 20px;
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
             opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(20px);
+            transform: translateY(-20px) scale(0.9);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .save-indicator.show {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
+        }
+
+        /* Individual item animations */
+        .property-item.item-moving {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .property-item.item-entering {
+            animation: slideInSoft 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .property-item.item-leaving {
+            animation: slideOutSoft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideInSoft {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes slideOutSoft {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+        }
+
+        /* Rank badges */
+        .rank-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: rgba(251, 191, 36, 0.9);
+            color: white;
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 2px solid rgba(40, 40, 40, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .rank-badge.first {
+            background: rgba(251, 191, 36, 0.9);
+        }
+
+        .rank-badge.second {
+            background: rgba(156, 163, 175, 0.9);
+        }
+
+        .rank-badge.third {
+            background: rgba(205, 124, 47, 0.9);
+        }
+
+        /* Smooth placeholder */
+        .reorder-placeholder {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px dashed rgba(59, 130, 246, 0.4);
+            border-radius: 12px;
+            height: 60px;
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(59, 130, 246, 0.8);
+            font-size: 14px;
+            font-weight: 400;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Soft hover effects */
+        .property-item .state-name {
+            transition: color 0.3s ease;
+        }
+
+        .property-item:hover .state-name {
+            color: rgba(59, 130, 246, 1);
+        }
+
+        .ranked-item:hover .state-name {
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
-    <div class="save-indicator" id="saveIndicator">Saved</div>
+    <div class="save-indicator" id="saveIndicator">✅ Saved</div>
     
     <div class="container">
-        <!-- Ranked Section -->
-        <div class="section ranked-section">
-            <div class="section-header">
-                <div class="section-title">Ranked</div>
-                <div class="section-subtitle">Your favorite Airbnbs</div>
+        <!-- Left Column: All Properties -->
+        <div class="column left-column">
+            <div class="column-header">
+                <div class="column-title">All Properties</div>
+                <div class="column-subtitle" id="allPropertiesCount">50 from Ryan's journey</div>
             </div>
-            <div class="items-container" id="rankedContainer">
-                <div class="empty-state">
-                    Drag properties here to start ranking
-                </div>
+            <div class="items-container" id="allPropertiesContainer">
+                <!-- Items will be populated by JavaScript -->
             </div>
         </div>
 
-        <!-- To Be Ranked Section -->
-        <div class="section to-rank-section">
-            <div class="section-header">
-                <div class="section-title">Properties</div>
-                <div class="section-subtitle" id="remainingCount">50 from Ryan's journey</div>
+        <!-- Right Column: Rankings -->
+        <div class="column right-column">
+            <div class="column-header">
+                <div class="column-title">Your Rankings</div>
+                <div class="column-subtitle" id="rankingsCount">Drag properties here to rank them</div>
             </div>
-            <div class="items-container" id="toRankContainer">
-                <!-- Items will be populated by JavaScript -->
+            <div class="items-container" id="rankingsContainer">
+                <div class="empty-state">
+                    <span class="empty-emoji">🏆</span>
+                    Drag your favorite properties from the left to start ranking!
+                </div>
             </div>
         </div>
     </div>
 
     <div class="instructions">
-        Drag properties up to rank them • Long press and drag to reorder
+        💡 Drag properties between columns • Reorder within rankings • Drag back to remove from rankings
     </div>
 
     <script>
         const airbnbData = [
-            { state: "Hawaii", property: "Ocean Front Home", type: "Villa" },
-            { state: "Arizona", property: "Norman Lykes House", type: "House" },
-            { state: "Oklahoma", property: "Treetopia Treehouse", type: "Treehouse" },
-            { state: "New Jersey", property: "Private Island", type: "House" },
-            { state: "South Carolina", property: "Charleston Waterfront", type: "House" },
-            { state: "Louisiana", property: "Ponchatoula Estate", type: "Mansion" },
-            { state: "Colorado", property: "Container Ranch", type: "Container" },
-            { state: "Rhode Island", property: "The Fairy House", type: "House" },
-            { state: "California", property: "The Castle Ivar", type: "Castle" },
-            { state: "West Virginia", property: "Bearwood", type: "House" },
-            { state: "Illinois", property: "Factory Home", type: "Factory" },
-            { state: "Massachusetts", property: "Wing Neck Lighthouse", type: "Lighthouse" },
-            { state: "Minnesota", property: "The Pump House", type: "Pump House" },
-            { state: "Montana", property: "Yellowstone", type: "Cabin" },
-            { state: "Iowa", property: "Pyramid House", type: "Pyramid" },
-            { state: "Tennessee", property: "Belltop", type: "House" },
-            { state: "Alaska", property: "Aurora House", type: "Cabin" },
-            { state: "North Carolina", property: "Luxury Yacht", type: "Boat" },
-            { state: "Oregon", property: "Rummer House", type: "House" },
-            { state: "Ohio", property: "The Roca Box Hop", type: "Cabin" },
-            { state: "Florida", property: "Prince Road Container House", type: "Container" },
-            { state: "Maine", property: "Copper Fox Treehouse", type: "Treehouse" },
-            { state: "Maryland", property: "Waterfront Barn", type: "Farm/Barn" },
-            { state: "Virginia", property: "Ava A-Frame", type: "House" },
-            { state: "Missouri", property: "Earthhouse Retreat", type: "Earthhouse" },
-            { state: "Vermont", property: "Glass Tiny House", type: "Tinyhouse" },
-            { state: "New York", property: "Willow Treehouse", type: "Treehouse" },
-            { state: "Wisconsin", property: "WW2 Airplane", type: "Plane" },
-            { state: "Georgia", property: "Lookout Tower", type: "Tower" },
-            { state: "Nevada", property: "Presidential Suite", type: "Apartment" },
-            { state: "New Mexico", property: "The Missile Silo", type: "Missile Silo" },
-            { state: "North Dakota", property: "Bison Ranch Lodge", type: "Ranch" },
-            { state: "Mississippi", property: "The Pool House", type: "House" },
-            { state: "Texas", property: "The Nut House", type: "House" },
-            { state: "Michigan", property: "Frank Lloyd House", type: "House" },
-            { state: "Connecticut", property: "River Loft", type: "Cottage" },
-            { state: "Arkansas", property: "Nuclear Missile Complex", type: "Missile Silo" },
-            { state: "Wyoming", property: "Snowflake Cabin", type: "Cabin" },
-            { state: "Alabama", property: "Storybook Castle", type: "Castle" },
-            { state: "Pennsylvania", property: "Round House", type: "Dome" },
-            { state: "Idaho", property: "Potato", type: "Farm/Barn" },
-            { state: "Kentucky", property: "Stable Suite", type: "Farm/Barn" },
-            { state: "New Hampshire", property: "Lil Red Caboose", type: "Train" },
-            { state: "Indiana", property: "Cabin off 39", type: "Cabin" },
-            { state: "Washington", property: "Space Destination", type: "UFO" },
-            { state: "Utah", property: "Star Wars Hut", type: "House" },
-            { state: "Kansas", property: "Zome on the Range", type: "Dome" },
-            { state: "Nebraska", property: "The Corny Cabin", type: "Cabin" },
-            { state: "Delaware", property: "Tiny House at Good Earth", type: "Tinyhouse" },
-            { state: "South Dakota", property: "Hillview Lodge", type: "Cabin" }
+            { state: "Hawaii", property: "Ocean Front Home" },
+            { state: "Arizona", property: "Norman Lykes House" },
+            { state: "Oklahoma", property: "Treetopia Treehouse" },
+            { state: "New Jersey", property: "Private Island" },
+            { state: "South Carolina", property: "Charleston Waterfront" },
+            { state: "Louisiana", property: "Ponchatoula Estate" },
+            { state: "Colorado", property: "Container Ranch" },
+            { state: "Rhode Island", property: "The Fairy House" },
+            { state: "California", property: "The Castle Ivar" },
+            { state: "West Virginia", property: "Bearwood" },
+            { state: "Illinois", property: "Factory Home" },
+            { state: "Massachusetts", property: "Wing Neck Lighthouse" },
+            { state: "Minnesota", property: "The Pump House" },
+            { state: "Montana", property: "Yellowstone" },
+            { state: "Iowa", property: "Pyramid House" },
+            { state: "Tennessee", property: "Belltop" },
+            { state: "Alaska", property: "Aurora House" },
+            { state: "North Carolina", property: "Luxury Yacht" },
+            { state: "Oregon", property: "Rummer House" },
+            { state: "Ohio", property: "The Roca Box Hop" },
+            { state: "Florida", property: "Prince Road Container House" },
+            { state: "Maine", property: "Copper Fox Treehouse" },
+            { state: "Maryland", property: "Waterfront Barn" },
+            { state: "Virginia", property: "Ava A-Frame" },
+            { state: "Missouri", property: "Earthhouse Retreat" },
+            { state: "Vermont", property: "Glass Tiny House" },
+            { state: "New York", property: "Willow Treehouse" },
+            { state: "Wisconsin", property: "WW2 Airplane" },
+            { state: "Georgia", property: "Lookout Tower" },
+            { state: "Nevada", property: "Presidential Suite" },
+            { state: "New Mexico", property: "The Missile Silo" },
+            { state: "North Dakota", property: "Bison Ranch Lodge" },
+            { state: "Mississippi", property: "The Pool House" },
+            { state: "Texas", property: "The Nut House" },
+            { state: "Michigan", property: "Frank Lloyd House" },
+            { state: "Connecticut", property: "River Loft" },
+            { state: "Arkansas", property: "Nuclear Missile Complex" },
+            { state: "Wyoming", property: "Snowflake Cabin" },
+            { state: "Alabama", property: "Storybook Castle" },
+            { state: "Pennsylvania", property: "Round House" },
+            { state: "Idaho", property: "Potato" },
+            { state: "Kentucky", property: "Stable Suite" },
+            { state: "New Hampshire", property: "Lil Red Caboose" },
+            { state: "Indiana", property: "Cabin off 39" },
+            { state: "Washington", property: "Space Destination" },
+            { state: "Utah", property: "Star Wars Hut" },
+            { state: "Kansas", property: "Zome on the Range" },
+            { state: "Nebraska", property: "The Corny Cabin" },
+            { state: "Delaware", property: "Tiny House at Good Earth" },
+            { state: "South Dakota", property: "Hillview Lodge" }
         ];
 
         let rankedItems = [];
         let draggedElement = null;
         let draggedFromRanked = false;
-        let dropIndicators = [];
+        let placeholder = null;
 
         // Cookie functions
         function saveToCookie() {
@@ -397,25 +461,25 @@
             }, 2000);
         }
 
-        function createCardElement(item, isRanked = false, rank = null) {
+        function createPropertyElement(item, isRanked = false, rank = null) {
             const div = document.createElement('div');
-            div.className = 'property-card';
+            div.className = `property-item ${isRanked ? 'ranked-item' : ''} item-entering`;
             div.draggable = true;
             div.dataset.state = item.state;
             
-            // Get initials from state name
-            const initials = item.state.split(' ').map(word => word[0]).join('').substring(0, 2);
+            // Add rank badge for top 3
+            const rankBadge = isRanked && rank <= 3 ? 
+                `<div class="rank-badge ${rank === 1 ? 'first' : rank === 2 ? 'second' : 'third'}">
+                    ${rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}
+                </div>` : '';
             
             div.innerHTML = `
-                <div class="property-avatar">
-                    <span class="property-initials">${initials}</span>
-                </div>
-                <div class="content">
+                ${rankBadge}
+                <div class="property-content">
                     <div class="state-name">${item.state}</div>
                     <div class="property-name">${item.property}</div>
-                    <div class="property-type">${item.type}</div>
                 </div>
-                ${isRanked ? `<div class="rank-number ${rank <= 3 ? 'top3' : ''}">${rank}</div>` : ''}
+                ${isRanked ? `<div class="rank-number ${rank === 1 ? 'top' : ''}">${rank}</div>` : ''}
             `;
 
             // Add event listeners
@@ -426,31 +490,27 @@
             return div;
         }
 
-        function createDropIndicator() {
-            const indicator = document.createElement('div');
-            indicator.className = 'drop-indicator';
-            return indicator;
+        function createPlaceholder() {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'reorder-placeholder';
+            placeholder.textContent = 'Drop here';
+            return placeholder;
         }
 
         function handleDragStart(e) {
-            draggedElement = e.target.closest('.property-card');
+            draggedElement = e.target.closest('.property-item');
             draggedElement.classList.add('dragging');
             
-            const rankedContainer = document.getElementById('rankedContainer');
-            draggedFromRanked = rankedContainer.contains(draggedElement);
+            const rankingsContainer = document.getElementById('rankingsContainer');
+            draggedFromRanked = rankingsContainer.contains(draggedElement);
             
             e.dataTransfer.effectAllowed = 'move';
-            
-            // Add drop indicators to ranked section
-            if (draggedFromRanked) {
-                addDropIndicators();
-            }
         }
 
         function handleDragEnd(e) {
             if (draggedElement) {
                 draggedElement.classList.remove('dragging');
-                removeDropIndicators();
+                removePlaceholder();
                 draggedElement = null;
                 draggedFromRanked = false;
             }
@@ -461,101 +521,159 @@
             
             if (!draggedElement) return;
             
-            const card = e.target.closest('.property-card');
-            const rankedContainer = document.getElementById('rankedContainer');
+            const item = e.target.closest('.property-item');
+            const rankingsContainer = document.getElementById('rankingsContainer');
             
-            if (rankedContainer.contains(card)) {
-                // Show drop indicator
-                const indicator = getDropIndicatorNear(card, e.clientY);
-                if (indicator) {
-                    removeActiveIndicators();
-                    indicator.classList.add('active');
-                }
+            // Handle dropping in rankings container
+            if (rankingsContainer.contains(item) && draggedFromRanked) {
+                showPlaceholder(item, e.clientY);
             }
         }
 
-        function addDropIndicators() {
-            const rankedContainer = document.getElementById('rankedContainer');
-            const cards = rankedContainer.querySelectorAll('.property-card');
+        function showPlaceholder(nearItem, clientY) {
+            removePlaceholder();
             
-            // Add indicator at the beginning
-            const firstIndicator = createDropIndicator();
-            rankedContainer.insertBefore(firstIndicator, rankedContainer.firstChild);
-            dropIndicators.push(firstIndicator);
+            if (!nearItem || nearItem === draggedElement) return;
             
-            // Add indicators between cards
-            cards.forEach(card => {
-                if (card !== draggedElement) {
-                    const indicator = createDropIndicator();
-                    rankedContainer.insertBefore(indicator, card.nextSibling);
-                    dropIndicators.push(indicator);
-                }
-            });
-        }
-
-        function removeDropIndicators() {
-            dropIndicators.forEach(indicator => {
-                if (indicator.parentNode) {
-                    indicator.parentNode.removeChild(indicator);
-                }
-            });
-            dropIndicators = [];
-        }
-
-        function removeActiveIndicators() {
-            dropIndicators.forEach(indicator => {
-                indicator.classList.remove('active');
-            });
-        }
-
-        function getDropIndicatorNear(card, clientY) {
-            const cardRect = card.getBoundingClientRect();
-            const cardCenter = cardRect.top + cardRect.height / 2;
+            placeholder = createPlaceholder();
             
-            if (clientY < cardCenter) {
-                return card.previousElementSibling && card.previousElementSibling.classList.contains('drop-indicator') 
-                    ? card.previousElementSibling : null;
+            const itemRect = nearItem.getBoundingClientRect();
+            const itemCenter = itemRect.top + itemRect.height / 2;
+            
+            if (clientY < itemCenter) {
+                nearItem.parentNode.insertBefore(placeholder, nearItem);
             } else {
-                return card.nextElementSibling && card.nextElementSibling.classList.contains('drop-indicator') 
-                    ? card.nextElementSibling : null;
+                nearItem.parentNode.insertBefore(placeholder, nearItem.nextSibling);
             }
         }
 
-        function moveToRanked(element, insertPosition = null) {
-            const state = element.dataset.state;
-            const item = airbnbData.find(item => item.state === state);
-            
-            if (!item || rankedItems.find(ranked => ranked.state === state)) {
-                return;
+        function removePlaceholder() {
+            if (placeholder && placeholder.parentNode) {
+                placeholder.parentNode.removeChild(placeholder);
+                placeholder = null;
             }
-            
+        }
+
+        function addSingleItemToRanked(item, insertPosition = null) {
             if (insertPosition !== null) {
                 rankedItems.splice(insertPosition, 0, item);
             } else {
                 rankedItems.push(item);
             }
             
-            element.remove();
-            renderRanked();
+            // Create and insert the new element
+            const newElement = createPropertyElement(item, true, insertPosition !== null ? insertPosition + 1 : rankedItems.length);
+            const rankingsContainer = document.getElementById('rankingsContainer');
+            
+            // Remove empty state if it exists
+            const emptyState = rankingsContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Insert at correct position
+            if (insertPosition !== null && insertPosition < rankingsContainer.children.length) {
+                rankingsContainer.insertBefore(newElement, rankingsContainer.children[insertPosition]);
+            } else {
+                rankingsContainer.appendChild(newElement);
+            }
+            
+            // Update rank numbers for all items
+            updateRankNumbers();
             updateCounts();
             saveToCookie();
         }
 
-        function reorderInRanked(draggedState, insertPosition) {
+        function removeSingleItemFromRanked(element) {
+            const state = element.dataset.state;
+            const itemIndex = rankedItems.findIndex(item => item.state === state);
+            
+            if (itemIndex !== -1) {
+                rankedItems.splice(itemIndex, 1);
+                
+                // Animate removal
+                element.classList.add('item-leaving');
+                
+                setTimeout(() => {
+                    element.remove();
+                    
+                    // Add to all properties
+                    const item = airbnbData.find(item => item.state === state);
+                    const allPropertiesContainer = document.getElementById('allPropertiesContainer');
+                    const newElement = createPropertyElement(item);
+                    allPropertiesContainer.appendChild(newElement);
+                    
+                    // Update rank numbers
+                    updateRankNumbers();
+                    updateCounts();
+                    saveToCookie();
+                    
+                    // Show empty state if needed
+                    if (rankedItems.length === 0) {
+                        showEmptyState();
+                    }
+                }, 400);
+            }
+        }
+
+        function moveItemInRanked(draggedState, targetIndex) {
             const draggedIndex = rankedItems.findIndex(item => item.state === draggedState);
             
             if (draggedIndex !== -1) {
                 const [draggedItem] = rankedItems.splice(draggedIndex, 1);
-                const adjustedPosition = insertPosition > draggedIndex ? insertPosition - 1 : insertPosition;
-                rankedItems.splice(adjustedPosition, 0, draggedItem);
+                rankedItems.splice(targetIndex, 0, draggedItem);
                 
-                renderRanked();
+                // Just update rank numbers, don't re-render everything
+                updateRankNumbers();
                 saveToCookie();
             }
         }
 
-        function renderToRank() {
-            const container = document.getElementById('toRankContainer');
+        function updateRankNumbers() {
+            const rankingsContainer = document.getElementById('rankingsContainer');
+            const items = rankingsContainer.querySelectorAll('.property-item');
+            
+            items.forEach((item, index) => {
+                const rankNumber = item.querySelector('.rank-number');
+                if (rankNumber) {
+                    rankNumber.textContent = index + 1;
+                    rankNumber.className = `rank-number ${index === 0 ? 'top' : ''}`;
+                }
+                
+                // Update badges
+                const existingBadge = item.querySelector('.rank-badge');
+                if (existingBadge) {
+                    existingBadge.remove();
+                }
+                
+                if (index < 3) {
+                    const badge = document.createElement('div');
+                    badge.className = `rank-badge ${index === 0 ? 'first' : index === 1 ? 'second' : 'third'}`;
+                    badge.textContent = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+                    item.appendChild(badge);
+                }
+            });
+        }
+
+        function showEmptyState() {
+            const rankingsContainer = document.getElementById('rankingsContainer');
+            
+            // Check if empty state already exists
+            if (rankingsContainer.querySelector('.empty-state')) {
+                return;
+            }
+            
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <span class="empty-emoji">🏆</span>
+                Drag your favorite properties from the left to start ranking!
+            `;
+            rankingsContainer.appendChild(emptyState);
+        }
+
+        function renderAllProperties() {
+            const container = document.getElementById('allPropertiesContainer');
             const unrankedItems = airbnbData.filter(item => 
                 !rankedItems.find(ranked => ranked.state === item.state)
             );
@@ -563,61 +681,98 @@
             container.innerHTML = '';
             unrankedItems.forEach((item, index) => {
                 setTimeout(() => {
-                    container.appendChild(createCardElement(item));
-                }, index * 15);
+                    container.appendChild(createPropertyElement(item));
+                }, index * 20);
             });
         }
 
-        function renderRanked() {
-            const container = document.getElementById('rankedContainer');
+        function renderRankings() {
+            const container = document.getElementById('rankingsContainer');
+            
+            // Clear container completely
+            container.innerHTML = '';
             
             if (rankedItems.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        Drag properties here to start ranking
-                    </div>
-                `;
+                showEmptyState();
             } else {
-                container.innerHTML = '';
                 rankedItems.forEach((item, index) => {
                     setTimeout(() => {
-                        container.appendChild(createCardElement(item, true, index + 1));
+                        container.appendChild(createPropertyElement(item, true, index + 1));
                     }, index * 20);
                 });
             }
         }
 
         function updateCounts() {
-            const remainingCount = document.getElementById('remainingCount');
+            const allPropertiesCount = document.getElementById('allPropertiesCount');
+            const rankingsCount = document.getElementById('rankingsCount');
+            
             const remaining = 50 - rankedItems.length;
-            remainingCount.textContent = remaining > 0 ? `${remaining} remaining` : 'All ranked!';
+            const ranked = rankedItems.length;
+            
+            if (remaining === 0) {
+                allPropertiesCount.textContent = 'All ranked! 🎉';
+                rankingsCount.textContent = 'Complete ranking of 50 properties';
+            } else if (ranked === 0) {
+                allPropertiesCount.textContent = '50 from Ryan\'s journey';
+                rankingsCount.textContent = 'Drag properties here to rank them';
+            } else {
+                allPropertiesCount.textContent = `${remaining} remaining`;
+                rankingsCount.textContent = `${ranked} ranked`;
+            }
         }
 
         // Setup drop zones
         function setupDropZones() {
-            const rankedContainer = document.getElementById('rankedContainer');
+            const rankingsContainer = document.getElementById('rankingsContainer');
+            const allPropertiesContainer = document.getElementById('allPropertiesContainer');
             
-            rankedContainer.addEventListener('dragover', (e) => {
+            // Rankings container drop zone
+            rankingsContainer.addEventListener('dragover', (e) => {
                 e.preventDefault();
             });
             
-            rankedContainer.addEventListener('drop', (e) => {
+            rankingsContainer.addEventListener('drop', (e) => {
                 e.preventDefault();
+                removePlaceholder();
                 
                 if (!draggedElement) return;
                 
-                const activeIndicator = document.querySelector('.drop-indicator.active');
+                const draggedState = draggedElement.dataset.state;
+                const item = airbnbData.find(item => item.state === draggedState);
                 
-                if (draggedFromRanked && activeIndicator) {
+                if (draggedFromRanked && placeholder) {
                     // Reorder within ranked
-                    const insertPosition = Array.from(rankedContainer.children).indexOf(activeIndicator);
-                    reorderInRanked(draggedElement.dataset.state, insertPosition);
-                } else if (!draggedFromRanked) {
-                    // Move from unranked to ranked
-                    const insertPosition = activeIndicator ? 
-                        Array.from(rankedContainer.children).indexOf(activeIndicator) : 
-                        rankedItems.length;
-                    moveToRanked(draggedElement, insertPosition);
+                    const allItems = Array.from(rankingsContainer.querySelectorAll('.property-item'));
+                    const targetIndex = allItems.findIndex(item => item.nextSibling === placeholder || item.previousSibling === placeholder);
+                    if (targetIndex !== -1) {
+                        moveItemInRanked(draggedState, targetIndex);
+                    }
+                } else if (!draggedFromRanked && item) {
+                    // Move from all properties to ranked
+                    const elementToRemove = draggedElement;
+                    elementToRemove.classList.add('item-leaving');
+                    
+                    setTimeout(() => {
+                        if (elementToRemove && elementToRemove.parentNode) {
+                            elementToRemove.remove();
+                        }
+                        addSingleItemToRanked(item);
+                    }, 300);
+                }
+            });
+            
+            // All properties container drop zone
+            allPropertiesContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+            
+            allPropertiesContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                
+                if (draggedElement && draggedFromRanked) {
+                    const elementToRemove = draggedElement;
+                    removeSingleItemFromRanked(elementToRemove);
                 }
             });
         }
@@ -625,8 +780,8 @@
         // Initialize
         function init() {
             loadFromCookie();
-            renderToRank();
-            renderRanked();
+            renderAllProperties();
+            renderRankings();
             updateCounts();
             setupDropZones();
         }
