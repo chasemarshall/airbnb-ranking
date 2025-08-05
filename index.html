@@ -1,4 +1,24 @@
-<!DOCTYPE html>
+function addSingleItemToAllProperties(item, toTop = false) {
+            const allPropertiesContainer = document.getElementById('allPropertiesContainer');
+            const newElement = createPropertyElement(item);
+            
+            if (toTop) {
+                // Add to top with special animation
+                newElement.style.transform = 'translateX(-50px) scale(0.9)';
+                newElement.style.opacity = '0';
+                
+                allPropertiesContainer.insertBefore(newElement, allPropertiesContainer.firstChild);
+                
+                // Animate in
+                setTimeout(() => {
+                    newElement.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                    newElement.style.transform = 'translateX(0) scale(1)';
+                    newElement.style.opacity = '1';
+                }, 50);
+            } else {
+                allPropertiesContainer.appendChild(newElement);
+            }
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -52,6 +72,34 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(40, 40, 40, 0.8);
             backdrop-filter: blur(30px);
+        }
+
+        .search-container {
+            padding: 16px 28px 0;
+            background: rgba(30, 30, 30, 0.6);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(60, 60, 60, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(60, 60, 60, 0.6);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .column-title {
@@ -259,6 +307,14 @@
             animation: slideOutSoft 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
+        .property-item.item-leaving-right {
+            animation: slideOutRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .property-item.item-leaving-left {
+            animation: slideOutLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         @keyframes slideInSoft {
             from {
                 opacity: 0;
@@ -278,6 +334,28 @@
             to {
                 opacity: 0;
                 transform: translateY(-20px) scale(0.95);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px) scale(0.9);
+            }
+        }
+
+        @keyframes slideOutLeft {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-100px) scale(0.9);
             }
         }
 
@@ -348,6 +426,9 @@
             <div class="column-header">
                 <div class="column-title">All Properties</div>
                 <div class="column-subtitle" id="allPropertiesCount">50 from Ryan's journey</div>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search properties..." id="searchInput">
             </div>
             <div class="items-container" id="allPropertiesContainer">
                 <!-- Items will be populated by JavaScript -->
@@ -431,6 +512,7 @@
         let draggedElement = null;
         let draggedFromRanked = false;
         let placeholder = null;
+        let searchTerm = '';
 
         // Cookie functions
         function saveToCookie() {
@@ -521,29 +603,42 @@
             
             if (!draggedElement) return;
             
-            const item = e.target.closest('.property-item');
             const rankingsContainer = document.getElementById('rankingsContainer');
             
-            // Handle dropping in rankings container
-            if (rankingsContainer.contains(item) && draggedFromRanked) {
-                showPlaceholder(item, e.clientY);
+            // Only show placeholder when dragging ranked items within rankings
+            if (draggedFromRanked && rankingsContainer.contains(e.target)) {
+                const rect = rankingsContainer.getBoundingClientRect();
+                const y = e.clientY - rect.top;
+                
+                const items = Array.from(rankingsContainer.querySelectorAll('.property-item:not(.dragging)'));
+                let insertBeforeItem = null;
+                
+                for (let item of items) {
+                    const itemRect = item.getBoundingClientRect();
+                    const itemY = itemRect.top - rect.top + itemRect.height / 2;
+                    
+                    if (y < itemY) {
+                        insertBeforeItem = item;
+                        break;
+                    }
+                }
+                
+                showPlaceholder(insertBeforeItem);
+            } else {
+                removePlaceholder();
             }
         }
 
-        function showPlaceholder(nearItem, clientY) {
+        function showPlaceholder(insertBeforeItem) {
             removePlaceholder();
             
-            if (!nearItem || nearItem === draggedElement) return;
-            
+            const rankingsContainer = document.getElementById('rankingsContainer');
             placeholder = createPlaceholder();
             
-            const itemRect = nearItem.getBoundingClientRect();
-            const itemCenter = itemRect.top + itemRect.height / 2;
-            
-            if (clientY < itemCenter) {
-                nearItem.parentNode.insertBefore(placeholder, nearItem);
+            if (insertBeforeItem) {
+                rankingsContainer.insertBefore(placeholder, insertBeforeItem);
             } else {
-                nearItem.parentNode.insertBefore(placeholder, nearItem.nextSibling);
+                rankingsContainer.appendChild(placeholder);
             }
         }
 
@@ -591,17 +686,15 @@
             if (itemIndex !== -1) {
                 rankedItems.splice(itemIndex, 1);
                 
-                // Animate removal
-                element.classList.add('item-leaving');
+                // Animate removal to the left
+                element.classList.add('item-leaving-left');
                 
                 setTimeout(() => {
                     element.remove();
                     
-                    // Add to all properties
+                    // Add to top of all properties
                     const item = airbnbData.find(item => item.state === state);
-                    const allPropertiesContainer = document.getElementById('allPropertiesContainer');
-                    const newElement = createPropertyElement(item);
-                    allPropertiesContainer.appendChild(newElement);
+                    addSingleItemToAllProperties(item, true);
                     
                     // Update rank numbers
                     updateRankNumbers();
@@ -612,22 +705,11 @@
                     if (rankedItems.length === 0) {
                         showEmptyState();
                     }
-                }, 400);
+                }, 500);
             }
         }
 
-        function moveItemInRanked(draggedState, targetIndex) {
-            const draggedIndex = rankedItems.findIndex(item => item.state === draggedState);
-            
-            if (draggedIndex !== -1) {
-                const [draggedItem] = rankedItems.splice(draggedIndex, 1);
-                rankedItems.splice(targetIndex, 0, draggedItem);
-                
-                // Just update rank numbers, don't re-render everything
-                updateRankNumbers();
-                saveToCookie();
-            }
-        }
+
 
         function updateRankNumbers() {
             const rankingsContainer = document.getElementById('rankingsContainer');
@@ -678,11 +760,17 @@
                 !rankedItems.find(ranked => ranked.state === item.state)
             );
             
+            // Filter by search term
+            const filteredItems = unrankedItems.filter(item =>
+                item.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.property.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
             container.innerHTML = '';
-            unrankedItems.forEach((item, index) => {
+            filteredItems.forEach((item, index) => {
                 setTimeout(() => {
                     container.appendChild(createPropertyElement(item));
-                }, index * 20);
+                }, index * 15);
             });
         }
 
@@ -696,9 +784,8 @@
                 showEmptyState();
             } else {
                 rankedItems.forEach((item, index) => {
-                    setTimeout(() => {
-                        container.appendChild(createPropertyElement(item, true, index + 1));
-                    }, index * 20);
+                    const element = createPropertyElement(item, true, index + 1);
+                    container.appendChild(element);
                 });
             }
         }
@@ -730,36 +817,89 @@
             // Rankings container drop zone
             rankingsContainer.addEventListener('dragover', (e) => {
                 e.preventDefault();
+                
+                if (!draggedElement) return;
+                
+                // Show drop zones when dragging over the container
+                const rect = rankingsContainer.getBoundingClientRect();
+                const y = e.clientY - rect.top;
+                
+                // Find the item we're hovering near
+                const items = Array.from(rankingsContainer.querySelectorAll('.property-item:not(.dragging)'));
+                let insertBeforeItem = null;
+                
+                for (let item of items) {
+                    const itemRect = item.getBoundingClientRect();
+                    const itemY = itemRect.top - rect.top + itemRect.height / 2;
+                    
+                    if (y < itemY) {
+                        insertBeforeItem = item;
+                        break;
+                    }
+                }
+                
+                showPlaceholder(insertBeforeItem, y);
             });
             
             rankingsContainer.addEventListener('drop', (e) => {
                 e.preventDefault();
-                removePlaceholder();
                 
                 if (!draggedElement) return;
                 
                 const draggedState = draggedElement.dataset.state;
                 const item = airbnbData.find(item => item.state === draggedState);
                 
-                if (draggedFromRanked && placeholder) {
-                    // Reorder within ranked
-                    const allItems = Array.from(rankingsContainer.querySelectorAll('.property-item'));
-                    const targetIndex = allItems.findIndex(item => item.nextSibling === placeholder || item.previousSibling === placeholder);
-                    if (targetIndex !== -1) {
-                        moveItemInRanked(draggedState, targetIndex);
+                if (draggedFromRanked) {
+                    // Reorder within ranked - find where to insert
+                    let insertIndex = rankedItems.length;
+                    
+                    if (placeholder && placeholder.nextElementSibling) {
+                        const nextElement = placeholder.nextElementSibling;
+                        const nextState = nextElement.dataset.state;
+                        insertIndex = rankedItems.findIndex(item => item.state === nextState);
                     }
+                    
+                    // Remove from old position
+                    const oldIndex = rankedItems.findIndex(item => item.state === draggedState);
+                    if (oldIndex !== -1) {
+                        const [movedItem] = rankedItems.splice(oldIndex, 1);
+                        
+                        // Adjust insert index if moving from earlier position
+                        if (oldIndex < insertIndex) {
+                            insertIndex--;
+                        }
+                        
+                        // Insert at new position
+                        rankedItems.splice(insertIndex, 0, movedItem);
+                        
+                        // Re-render the rankings to show new order
+                        renderRankings();
+                        saveToCookie();
+                    }
+                    
                 } else if (!draggedFromRanked && item) {
                     // Move from all properties to ranked
                     const elementToRemove = draggedElement;
-                    elementToRemove.classList.add('item-leaving');
+                    elementToRemove.classList.add('item-leaving-right');
                     
                     setTimeout(() => {
                         if (elementToRemove && elementToRemove.parentNode) {
                             elementToRemove.remove();
                         }
-                        addSingleItemToRanked(item);
-                    }, 300);
+                        
+                        // Determine insert position based on placeholder
+                        let insertPosition = rankedItems.length;
+                        if (placeholder && placeholder.nextElementSibling) {
+                            const nextState = placeholder.nextElementSibling.dataset.state;
+                            insertPosition = rankedItems.findIndex(item => item.state === nextState);
+                            if (insertPosition === -1) insertPosition = rankedItems.length;
+                        }
+                        
+                        addSingleItemToRanked(item, insertPosition);
+                    }, 500);
                 }
+                
+                removePlaceholder();
             });
             
             // All properties container drop zone
@@ -784,6 +924,24 @@
             renderRankings();
             updateCounts();
             setupDropZones();
+            setupSearch();
+        }
+
+        // Setup search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                renderAllProperties();
+            });
+            
+            // Clear search when items are moved
+            searchInput.addEventListener('focus', () => {
+                if (searchInput.value) {
+                    searchInput.select();
+                }
+            });
         }
 
         init();
